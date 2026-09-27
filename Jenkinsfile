@@ -2,14 +2,13 @@ pipeline {
     agent any
 
     tools {
-        go 'Go-1.26'
+        go 'Go-set'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 // Если в настройках проекта выбран "Pipeline script from SCM",
-                // этот stage можно удалить — Jenkins сам клонирует репозиторий.
                 checkout scm
             }
         }
