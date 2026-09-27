@@ -1,9 +1,16 @@
 pipeline {
     agent any
+
+    tools {
+        go 'Go-1.26'
+    }
+
     stages {
-        stage('Git') {
-            steps { 
-                git 'https://github.com/netology-code/sdvps-materials.git' 
+        stage('Checkout') {
+            steps {
+                // Если в настройках проекта выбран "Pipeline script from SCM",
+                // этот stage можно удалить — Jenkins сам клонирует репозиторий.
+                checkout scm
             }
         }
         stage('Test') {
