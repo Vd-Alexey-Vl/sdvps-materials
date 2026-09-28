@@ -2,33 +2,33 @@ pipeline {
     agent any
 
     tools {
-        go 'Go-set'
+        go 'Go-set'  
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Если в настройках проекта выбран "Pipeline script from SCM",
-                checkout scm
-            }
-        }
         stage('Test') {
             steps {
                 sh 'go test .'
             }
         }
-        stage('Build') {
+        stage('Build Binary') {
             steps {
-                sh 'docker build . -t localhost:8082/hello-world:v$BUILD_NUMBER'
+                sh 'go build -o hello-world .'
             }
         }
-        stage('Push') {
+        stage('Upload to Nexus') {
             steps {
-                sh '''
-                    echo "admin" | docker login localhost:8082 -u admin --password-stdin
-                    docker push localhost:8082/hello-world:v$BUILD_NUMBER
-                    docker logout localhost:8082
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'nexus-cred',
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                )]) {
+                    sh '''
+                        curl -u $NEXUS_USER:$NEXUS_PASS \
+                            --upload-file hello-world \
+                            http://127.0.0.1:8081/repository/go-binaries/hello-world-v$BUILD_NUMBER
+                    '''
+                }
             }
         }
     }
